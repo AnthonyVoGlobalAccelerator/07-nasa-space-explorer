@@ -1,0 +1,23 @@
+{
+  "name": "NASA Space Explorer",
+  "short_name": "NASA Space Explorer",
+  "start_url": "./",
+  "display": "standalone",
+  "theme_color": "#050b18",
+  "background_color": "#050b18",
+  "description": "Explore NASA's Astronomy Picture of the Day archive.",
+  "icons": [
+    {
+      "src": "img/NASA-Logo-Large.jpg",
+      "sizes": "800x665",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "img/nasa-worm-logo.png",
+      "sizes": "2880x804",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
