@@ -1,0 +1,10 @@
+{
+  "name": "nasa-space-explorer",
+  "private": true,
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

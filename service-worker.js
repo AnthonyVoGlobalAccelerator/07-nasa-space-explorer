@@ -35,8 +35,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
-  const isApodRequest = requestUrl.origin === 'https://science.nasa.gov'
-    && requestUrl.pathname === '/wp-json/wp/v2/apod-basic';
+  const isApodRequest = requestUrl.origin === self.location.origin
+    && requestUrl.pathname === '/api/apod';
 
   if (isApodRequest) {
     // NASA data prefers fresh results, with the last successful response as a fallback.

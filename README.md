@@ -9,3 +9,14 @@ You'll get to use your skills to build something that's actually connected to re
 - The provided files include a NASA logo, date inputs, a button, a placeholder for your gallery, and basic layout and styling to help you get started.
 - It also includes built-in logic (in `dateRange.js`) to handle the valid APOD date range—from June 16, 1995 to today. No need to modify it.
 - All your custom JavaScript should go in `script.js`. That's where you'll write the code that fetches data and displays your gallery.
+
+## Run locally
+
+The app uses a server-side proxy so the NASA API key is never sent to the browser.
+
+1. Copy `server/.env.example` to `server/.env`.
+2. Replace the placeholder with your NASA API key.
+3. Run `npm start`.
+4. Open `http://localhost:3000`.
+
+The `server/.env` file is ignored by Git and must never be committed.

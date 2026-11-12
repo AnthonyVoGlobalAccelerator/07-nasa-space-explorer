@@ -17,7 +17,7 @@ const installMessage = document.getElementById('installMessage');
 const notificationButton = document.getElementById('notificationButton');
 const notificationMessage = document.getElementById('notificationMessage');
 
-const apiUrl = 'https://science.nasa.gov/wp-json/wp/v2/apod-basic';
+const apiUrl = '/api/apod';
 const facts = [
 	'A day on Venus is longer than its year.',
 	'Neutron stars can spin about 600 times every second.',
@@ -141,11 +141,6 @@ function escapeHtml(value) {
 		"'": '&#39;',
 		'"': '&quot;'
 	}[character]));
-}
-
-function formatApiDate(dateValue) {
-	const [year, month, day] = dateValue.split('-');
-	return `${year.slice(2)}${month}${day}`;
 }
 
 function getPlainText(value) {
@@ -310,8 +305,8 @@ async function getSpaceImages() {
 
 	try {
 		const params = new URLSearchParams({
-			date_from: formatApiDate(startInput.value),
-			date_to: formatApiDate(endInput.value)
+			start_date: startInput.value,
+			end_date: endInput.value
 		});
 		const response = await fetch(`${apiUrl}?${params}`);
 		if (!response.ok) throw new Error('NASA API request failed');
