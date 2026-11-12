@@ -165,6 +165,37 @@ function normalizeEntry(entry) {
 	};
 }
 
+function getSafeMediaUrl(value) {
+	try {
+		const mediaUrl = new URL(value);
+		return mediaUrl.protocol === 'https:' || mediaUrl.protocol === 'http:' ? mediaUrl.href : '';
+	} catch (error) {
+		return '';
+	}
+}
+
+function getVideoEmbedUrl(videoUrl) {
+	const safeUrl = getSafeMediaUrl(videoUrl);
+	if (!safeUrl) return '';
+
+	try {
+		const parsedUrl = new URL(safeUrl);
+		const isYouTube = parsedUrl.hostname === 'youtube.com'
+			|| parsedUrl.hostname === 'www.youtube.com'
+			|| parsedUrl.hostname === 'youtu.be'
+			|| parsedUrl.hostname === 'www.youtu.be';
+
+		if (!isYouTube) return safeUrl;
+
+		const videoId = parsedUrl.hostname.includes('youtu.be')
+			? parsedUrl.pathname.slice(1)
+			: parsedUrl.searchParams.get('v');
+		return videoId ? `https://www.youtube.com/embed/${encodeURIComponent(videoId)}` : safeUrl;
+	} catch (error) {
+		return safeUrl;
+	}
+}
+
 function createGalleryCard(entry) {
 	const card = document.createElement('article');
 	card.className = 'gallery-item';
@@ -174,12 +205,16 @@ function createGalleryCard(entry) {
 
 	if (entry.media_type === 'video') {
 		card.classList.add('video-card');
+		card.tabIndex = 0;
 		card.innerHTML = `
 			<div class="placeholder-icon">▶</div>
 			<p class="video-label">NASA video</p>
 			<h2>${title}</h2>
-			<p class="date">${date}</p>
-			<p><a href="${escapeHtml(entry.url || '#')}" target="_blank" rel="noopener">Watch this entry on NASA</a></p>`;
+			<p class="date">${date}</p>`;
+		card.addEventListener('click', () => openModal(entry));
+		card.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter' || event.key === ' ') openModal(entry);
+		});
 		return card;
 	}
 
@@ -198,13 +233,59 @@ function createGalleryCard(entry) {
 
 function openModal(entry) {
 	const imageUrl = entry.hdurl || entry.url;
-	modalMedia.innerHTML = imageUrl ? `<img src="${imageUrl}" alt="${entry.title || 'NASA space image'}">` : '';
+	modalMedia.innerHTML = '';
+	if (entry.media_type === 'video') {
+		const videoUrl = getSafeMediaUrl(entry.url);
+		const embedUrl = getVideoEmbedUrl(videoUrl);
+		if (embedUrl) {
+			const mediaFrame = document.createElement('iframe');
+			mediaFrame.src = embedUrl;
+			mediaFrame.title = entry.title || 'NASA space video';
+			mediaFrame.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+			mediaFrame.setAttribute('allowfullscreen', '');
+			mediaFrame.addEventListener('error', () => showVideoError(videoUrl));
+			modalMedia.appendChild(mediaFrame);
+			const fallbackLink = document.createElement('a');
+			fallbackLink.href = videoUrl;
+			fallbackLink.target = '_blank';
+			fallbackLink.rel = 'noopener';
+			fallbackLink.textContent = 'Open video in a new tab';
+			modalMedia.appendChild(fallbackLink);
+		} else {
+			showVideoError('');
+		}
+	} else if (imageUrl) {
+		const safeImageUrl = getSafeMediaUrl(imageUrl);
+		if (!safeImageUrl) {
+			modalMedia.textContent = 'This NASA image could not be loaded.';
+		} else {
+			const image = document.createElement('img');
+			image.src = safeImageUrl;
+			image.alt = entry.title || 'NASA space image';
+			image.addEventListener('error', () => {
+				modalMedia.textContent = 'This NASA image could not be loaded.';
+			});
+			modalMedia.appendChild(image);
+		}
+	}
 	modalTitle.textContent = entry.title || 'Untitled space image';
 	modalDate.textContent = entry.date || 'Date unavailable';
 	modalExplanation.textContent = entry.explanation || 'NASA has not provided an explanation for this entry.';
 	imageModal.hidden = false;
 	document.body.style.overflow = 'hidden';
 	closeModalButton.focus();
+}
+
+function showVideoError(videoUrl) {
+	modalMedia.innerHTML = '<p class="media-error">This video could not be embedded.</p>';
+	if (videoUrl) {
+		const fallbackLink = document.createElement('a');
+		fallbackLink.href = videoUrl;
+		fallbackLink.target = '_blank';
+		fallbackLink.rel = 'noopener';
+		fallbackLink.textContent = 'Open the video in a new tab';
+		modalMedia.appendChild(fallbackLink);
+	}
 }
 
 function closeModal() {
